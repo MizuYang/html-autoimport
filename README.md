@@ -6,7 +6,7 @@
 由於在頒獎後才能確定得獎者與新聞稿的正式內容，開發階段只能使用假資料作為佔位。  
 然而，當正式資料下來時，我們需要在多個頁面、元件中逐一替換假資料，這不僅耗時，還容易因內容錯誤或漏貼而導致問題。
 
-原本考慮將文案與圖片路徑集中管理於各頁面的文案 JavaScript 檔案中，這樣開發者只需修改文案檔案即可同步更新頁面內容。然而，使用 JavaScript 在客戶端動態替換文案，會導致文案無法被搜尋引擎爬蟲正確讀取，進而影響 SEO 表現。
+原本考慮將文案與圖片路徑集中管理於 `autoimport.js` 檔案中，這樣開發者只需修改 `autoimport.js` 檔案即可同步更新頁面內容。然而，使用 JavaScript 在客戶端動態替換文案，會導致文案無法被搜尋引擎爬蟲正確讀取，進而影響 SEO 表現。
 
 為了解決上述問題，我開發了這個文案替換工具，
 為公司提供自動化的 HTML 數據導入解決方案，提升業務效率。
@@ -17,14 +17,14 @@
 
 工具採用了以下方法：
 
-1. **集中管理文案與圖片**  
-   將需要更改的文案與圖片資訊統一存放在文案 JavaScript 檔案中，並使用結構清晰的物件進行管理。  
+1. **`autoimport.js` 集中管理文案與圖片**  
+   將需要更改的文案與圖片資訊統一存放在 `autoimport.js` 檔案中，並使用結構清晰的物件進行管理。  
    - 圖片資訊放置於 `img` 屬性中，文字資訊放置於 `text` 屬性中。
    - 以識別名稱（如 `圖片名稱A` 或 `名稱文字A`）作為唯一標識，便於頁面對應。
 
    示例：
    ```javascript
-   export const content = {
+   export const autoImport = {
      img: {
        '圖片名稱A': {
          src: '../images/img-1.jpg',
@@ -47,7 +47,7 @@
    };
 
 2. 對應 HTML 標籤與文案識別名稱
-在 HTML 標籤中加入 data-autoimport-* 屬性，對應文案的識別名稱，例如：
+在 HTML 標籤中加入 `data-autoimport-*` 屬性，對應 `autoimport.js` 的識別名稱，例如：
 
 ```html
 <img data-autoimport-img="圖片名稱A" src="../images/開發時的測試圖片.png">
@@ -55,30 +55,34 @@
 ```
 
 3. 使用 Node.js 替換內容
-透過 Node.js 腳本解析文案 JavaScript 檔案的內容，依據 data-autoimport-* 屬性對應的識別名稱，將內容插入到相應的 HTML 標籤中，並保有該元素本身的所有屬性內容，完成文案與圖片的替換。(屬性重複則會以文案 JavaScript 的值為主)
+透過 Node.js 腳本解析 `autoimport.js` 檔案的內容，依據 `data-autoimport-*` 屬性對應的識別名稱，將內容插入到相應的 HTML 標籤中，並保有該元素本身的所有屬性內容，完成文案與圖片的替換。(屬性重複則會以 `autoimport.js` 的值為主)
 
 
 ## 使用流程
 
 [開發階段]
 ```html
-< --! page1.html -->
+<!-- page1.html -->
 <p data-autoimport-text="page1-text-5">開發時的假文字</p>
 ```
 
-[得到正式資料後，將正式資料放到文案 JavaScript]
+[得到正式資料後，將正式資料放到 `autoimport.js`]
 ```javascript
-// autoimportModules/page1.js
-text: {
+// autoimport.js
+const autoImport = {
+  text: {
   'page1-text-5': {
     content: '正式資料'
   }
 },
+};
+
+module.exports = autoImport;
 ```
 
-[使用 npm run build 編譯，將正式文案內容匯入]
+[使用 `npm run build` 編譯，將正式文案內容匯入 html 中，再輸出到 `dist/pages/`]
 ```html
-< --! dist/page1.html -->
+<!-- dist/page1.html -->
 <p data-autoimport-text="page1-text-5">正式資料</p>
 ```
 
@@ -90,8 +94,7 @@ text: {
 npm install
 ```
 
-2. 設定文案檔案
-在 頁面.js 檔案中新增需要替換的文案與圖片資訊。結構如下：
+2. 在 `autoimport.js` 檔案中新增需要替換的文案與圖片資訊。結構如下：
 
 ```javascript
 const autoImport = {
@@ -117,31 +120,29 @@ const autoImport = {
 module.exports = autoImport;
 ```
 
-3. 編輯 HTML 文件
-在 HTML 文件中，為需要替換的元素新增對應的 data-autoimport-* 屬性，對應文案的識別名稱，例如：
+3. 在 HTML 文件中，為需要替換的元素新增對應的 `data-autoimport-*` 屬性，對應 `autoimport.js` 檔案中的識別名稱，例如：
 ```html
 <img data-autoimport-img="圖片名稱A" src="../images/placeholder.png">
 <p data-autoimport-text="名稱文字A">這是占位文字</p>
 ```
 
-4. 執行文案替換
-在專案根目錄執行以下指令：
+4. 執行文案替換，在專案根目錄執行以下指令：
 ```
 npm run build
 ```
 
-此腳本會自動解析 pages/* 文案檔案，並將正式內容插入對應的 HTML 文件中。
-替換後的檔案將生成到 dist/ 資料夾，包含以下目錄結構：
+此腳本會自動解析 `pages/*` 文案檔案，並將正式內容插入對應的 HTML 文件中。
+替換後的檔案將生成到 `dist/` 資料夾，包含以下目錄結構：
 
-- pages/
-- images/
-- js/
-- style/
+- `pages/`
+- `images/`
+- `js/`
+- `style/`
 
-若有其他希望自動加入到 dist/ 的資料夾或檔案，請自行到 build.js 將資料夾名稱新增到 directoriesToCopy 變數中。
+若有其他希望自動加入到 `dist/` 的資料夾或檔案，請自行到 `build.js` 將資料夾名稱新增到 `directoriesToCopy` 變數中。
 
 5. 檢查輸出結果
-檢查 dist/ 資料夾內的 HTML 文件，確認替換是否正確。
+檢查 `dist/` 資料夾內的 HTML 文件，確認替換是否正確。
 
 
 ## 注意事項
@@ -152,7 +153,7 @@ npm run build
 識別名稱唯一性
 識別名稱需保持唯一，避免覆蓋錯誤的內容。
 
-文案 JavaScript 中，text 的 content 是 `<p>` 的文字內容，而非屬性，例：
+`autoimport.js` 中，`text[識別名稱].content` 是 `<p>` 的文字內容，而非屬性，例：
 ```javascript
 text: {
   'text-1': {
@@ -160,5 +161,5 @@ text: {
   }
 }
 ```
-正確：`<p data-autoimport-text="text-1">正式資料</p>`
-錯誤：`<p data-autoimport-text="text-1" content="正式資料"></p>`
+正確 ✔️：`<p data-autoimport-text="text-1">正式資料</p>` <br />
+錯誤 ❌：`<p data-autoimport-text="text-1" content="正式資料"></p>`
