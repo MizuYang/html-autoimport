@@ -30,11 +30,17 @@
          title: 'page1 正式title-1',
          alt: 'page1 正式圖片的描述-1',
          "aria-hidden": 'true',
+          (可擴充其他屬性...)
        },
        // 更多圖片...
      },
      text: {
-       '名稱文字A': 'page1 正式文案文字內容1',
+       '名稱文字A': {
+          title: 'page1 正式title-2',
+          "aria-hidden": 'false',
+          content: 'page1 正式文案文字內容2', // 這個不是屬性，這是 <p> 的 textContent
+          (可擴充其他屬性...)
+       },
        // 更多文字...
      },
    };
@@ -48,8 +54,32 @@
 ```
 
 3. 使用 Node.js 替換內容
-透過 Node.js 腳本解析文案 JavaScript 檔案的內容，依據 data-autoimport-* 屬性對應的識別名稱，將內容插入到相應的 HTML 標籤中，並保有該元素本身的所有屬性內容，完成文案與圖片的替換。
+透過 Node.js 腳本解析文案 JavaScript 檔案的內容，依據 data-autoimport-* 屬性對應的識別名稱，將內容插入到相應的 HTML 標籤中，並保有該元素本身的所有屬性內容，完成文案與圖片的替換。(屬性重複則會以文案 JavaScript 的值為主)
 
+
+## 使用流程
+
+[開發階段]
+```
+page1.html
+<p data-autoimport-text="page1-text-5">開發時的假文字</p>
+```
+
+[得到正式資料後，將正式資料放到文案 JavaScript]
+```
+autoimportModules/page1.js
+text: {
+  'page1-text-5': {
+    content: '正式資料'
+  }
+},
+```
+
+[使用 npm run build 編譯，將正式文案內容匯入]
+```
+dist/page1.html
+<p data-autoimport-text="page1-text-5">正式資料</p>
+```
 
 ## 使用說明
 
@@ -73,7 +103,13 @@ const content = {
     },
   },
   text: {
-    '名稱文字A': '正式文字內容',
+    '名稱文字A': {
+      title: 'page1 正式title-2',
+      "aria-hidden": 'false',
+      content: 'page1 正式文案文字內容2', // 這個不是屬性，這是 <p> 的 textContent
+      (可擴充其他屬性...)
+    },
+    // 更多文字...
   },
 };
 
@@ -105,7 +141,7 @@ npm run build
 若有其他希望自動加入到 dist/ 的資料夾或檔案，請自行到 build.js 將資料夾名稱新增到 directoriesToCopy 變數中。
 
 5. 檢查輸出結果
-替換完成後，檢查生成的 HTML 文件，確認文案與圖片是否正確替換。
+檢查 dist/ 資料夾內的 HTML 文件，確認替換是否正確。
 
 
 ## 注意事項
@@ -115,3 +151,14 @@ npm run build
 
 識別名稱唯一性
 識別名稱需保持唯一，避免覆蓋錯誤的內容。
+
+文案 JavaScript 中，text 的 content 是 <p> 的文字內容，而非屬性，例：
+```
+text: {
+  'text-1': {
+    content: '正式資料'
+  }
+}
+```
+正確：<p data-autoimport-text="text-1">正式資料</p>
+錯誤：<p data-autoimport-text="text-1" content="正式資料"></p>
