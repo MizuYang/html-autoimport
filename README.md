@@ -8,13 +8,14 @@
 
 原本考慮將文案與圖片路徑集中管理於各頁面的文案 JavaScript 檔案中，這樣開發者只需修改文案檔案即可同步更新頁面內容。然而，使用 JavaScript 在客戶端動態替換文案，會導致文案無法被搜尋引擎爬蟲正確讀取，進而影響 SEO 表現。
 
-為了解決上述問題，我們開發了這個文案替換工具。
+為了解決上述問題，我開發了這個文案替換工具，
+為公司提供自動化的 HTML 數據導入解決方案，提升業務效率。
 
 ---
 
 ## 解決方案
 
-我們的工具採用了以下方法：
+工具採用了以下方法：
 
 1. **集中管理文案與圖片**  
    將需要更改的文案與圖片資訊統一存放在文案 JavaScript 檔案中，並使用結構清晰的物件進行管理。  
@@ -48,7 +49,7 @@
 2. 對應 HTML 標籤與文案識別名稱
 在 HTML 標籤中加入 data-autoimport-* 屬性，對應文案的識別名稱，例如：
 
-```
+```html
 <img data-autoimport-img="圖片名稱A" src="../images/開發時的測試圖片.png">
 <p data-autoimport-text="名稱文字A" class="text-center" title="文字title">開發時的假文字</p>
 ```
@@ -60,14 +61,14 @@
 ## 使用流程
 
 [開發階段]
-```
-page1.html
+```html
+< --! page1.html -->
 <p data-autoimport-text="page1-text-5">開發時的假文字</p>
 ```
 
 [得到正式資料後，將正式資料放到文案 JavaScript]
-```
-autoimportModules/page1.js
+```javascript
+// autoimportModules/page1.js
 text: {
   'page1-text-5': {
     content: '正式資料'
@@ -76,8 +77,8 @@ text: {
 ```
 
 [使用 npm run build 編譯，將正式文案內容匯入]
-```
-dist/page1.html
+```html
+< --! dist/page1.html -->
 <p data-autoimport-text="page1-text-5">正式資料</p>
 ```
 
@@ -92,8 +93,8 @@ npm install
 2. 設定文案檔案
 在 頁面.js 檔案中新增需要替換的文案與圖片資訊。結構如下：
 
-```
-const content = {
+```javascript
+const autoImport = {
   img: {
     '圖片名稱A': {
       src: '../images/img-1.jpg',
@@ -113,15 +114,14 @@ const content = {
   },
 };
 
-module.exports = page1;
+module.exports = autoImport;
 ```
 
 3. 編輯 HTML 文件
 在 HTML 文件中，為需要替換的元素新增對應的 data-autoimport-* 屬性，對應文案的識別名稱，例如：
-```
+```html
 <img data-autoimport-img="圖片名稱A" src="../images/placeholder.png">
 <p data-autoimport-text="名稱文字A">這是占位文字</p>
-
 ```
 
 4. 執行文案替換
@@ -152,13 +152,13 @@ npm run build
 識別名稱唯一性
 識別名稱需保持唯一，避免覆蓋錯誤的內容。
 
-文案 JavaScript 中，text 的 content 是 <p> 的文字內容，而非屬性，例：
-```
+文案 JavaScript 中，text 的 content 是 `<p>` 的文字內容，而非屬性，例：
+```javascript
 text: {
   'text-1': {
     content: '正式資料'
   }
 }
 ```
-正確：<p data-autoimport-text="text-1">正式資料</p>
-錯誤：<p data-autoimport-text="text-1" content="正式資料"></p>
+正確：`<p data-autoimport-text="text-1">正式資料</p>`
+錯誤：`<p data-autoimport-text="text-1" content="正式資料"></p>`

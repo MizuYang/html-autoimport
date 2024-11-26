@@ -39,11 +39,46 @@ const processFile = (filePath) => {
   // 處理文字
   $('[data-autoimport-text]').each((index, element) => {
     const dataAttr = $(element).attr('data-autoimport-text');
-    const newTextTag = processElement(element, dataAttr, autoImport.text, 'p', $);
-    if (newTextTag) {
-      $(element).replaceWith(newTextTag);
+    const textData = autoImport.text[dataAttr];
+  
+    if (textData) {
+      // 保留原本的屬性
+      const originalAttributes = $(element).get(0).attributes;
+      const newElement = $('<p></p>'); // 創建新的 <p> 元素
+  
+      // 將原本的屬性複製到新的元素上
+      for (let i = 0; i < originalAttributes.length; i++) {
+        const attrName = originalAttributes[i].name;
+        const attrValue = originalAttributes[i].value;
+        newElement.attr(attrName, attrValue);
+      }
+  
+      // 設定新的屬性
+      if (textData.title) {
+        newElement.attr('title', textData.title);
+      }
+      if (textData['aria-hidden']) {
+        newElement.attr('aria-hidden', textData['aria-hidden']);
+      }
+  
+      // 設定內容
+      newElement.text(textData.content);
+  
+      // 替換原本的元素
+      $(element).replaceWith(newElement);
     }
   });
+  
+
+
+  // 處理文字
+  // $('[data-autoimport-text]').each((index, element) => {
+  //   const dataAttr = $(element).attr('data-autoimport-text');
+  //   const newTextTag = processElement(element, dataAttr, autoImport.text, 'p', $);
+  //   if (newTextTag) {
+  //     $(element).replaceWith(newTextTag);
+  //   }
+  // });
 
   return $.html();
 };
