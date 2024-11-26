@@ -1,0 +1,20 @@
+{
+  "name": "autoimport",
+  "version": "1.0.0",
+  "main": "autoimport.js",
+  "scripts": {
+    "build": "webpack --mode production && node build.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "cheerio": "^1.0.0",
+    "fs-extra": "^11.2.0"
+  },
+  "devDependencies": {
+    "webpack": "^5.96.1",
+    "webpack-cli": "^5.1.4"
+  }
+}
